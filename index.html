@@ -1,1 +1,1239 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>GUMAC CRM Dashboard — Tổng quan kinh doanh tháng 5/2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<style>
+  :root {
+    --bg-base: #f7f8fb;
+    --surface: #ffffff;
+    --border-soft: rgba(15, 23, 42, 0.06);
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-tertiary: #94a3b8;
+    --pastel-blue: #c7dafc;
+    --pastel-blue-strong: #93b6f5;
+    --pastel-blue-deep: #5b8def;
+    --pastel-purple: #d9c8f7;
+    --pastel-purple-strong: #b89cf0;
+    --pastel-pink: #f7c8dc;
+    --pastel-pink-strong: #ed9ebe;
+    --pastel-green: #b9e6c9;
+    --pastel-green-strong: #6dc88a;
+    --pastel-amber: #f8dcae;
+    --pastel-amber-strong: #d4a849;
+    --pastel-red: #f5b9b9;
+    --pastel-red-strong: #e57878;
+  }
+  * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    margin: 0;
+    color: var(--text-primary);
+    background: var(--bg-base);
+    background-image:
+      radial-gradient(at 8% 0%, rgba(199, 218, 252, 0.45) 0px, transparent 50%),
+      radial-gradient(at 92% 6%, rgba(247, 200, 220, 0.35) 0px, transparent 50%),
+      radial-gradient(at 50% 100%, rgba(217, 200, 247, 0.30) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+  .display-font { font-family: 'Plus Jakarta Sans', sans-serif; letter-spacing: -0.022em; }
+  .ticker { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum'; }
+  .surface {
+    background: var(--surface);
+    border-radius: 24px;
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 8px 24px -12px rgba(15,23,42,0.06);
+  }
+  .surface-elevated {
+    background: var(--surface);
+    border-radius: 28px;
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 1px 2px rgba(15,23,42,0.03), 0 12px 40px -16px rgba(15,23,42,0.10), 0 2px 8px -2px rgba(15,23,42,0.04);
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+  }
+  .pill { border-radius: 9999px; padding: 6px 12px; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .fadeup { animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards; }
+  @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  .shimmer-text {
+    background: linear-gradient(90deg, #5b8def, #b89cf0, #ed9ebe, #b89cf0, #5b8def);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: shimmer 6s linear infinite;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(15,23,42,0.1); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(15,23,42,0.2); }
+  .recharts-cartesian-grid-horizontal line, .recharts-cartesian-grid-vertical line { stroke: rgba(15,23,42,0.05); }
+  .recharts-tooltip-wrapper { outline: none !important; }
 
+  /* CRM specific */
+  .nav-pill {
+    padding: 10px 18px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .nav-pill:hover { background: rgba(15,23,42,0.04); color: var(--text-primary); }
+  .nav-pill.active {
+    background: white;
+    color: var(--text-primary);
+    border: 1px solid var(--border-soft);
+    box-shadow: 0 2px 8px rgba(15,23,42,0.06);
+  }
+  .stat-card {
+    padding: 20px 22px;
+    border-radius: 22px;
+    background: white;
+    border: 1px solid var(--border-soft);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat-card:hover { transform: translateY(-2px); box-shadow: 0 12px 32px -16px rgba(15,23,42,0.12); }
+  .stat-card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; }
+  .progress-track {
+    height: 8px;
+    background: rgba(15,23,42,0.05);
+    border-radius: 99px;
+    overflow: hidden;
+    position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .badge-success { background: #e8f5ee; color: #2d6a47; border: 1px solid #b9e6c9; }
+  .badge-warn { background: #fdf6e3; color: #8a6611; border: 1px solid #f8dcae; }
+  .badge-danger { background: #fdecec; color: #9a3232; border: 1px solid #f5b9b9; }
+  .badge-info { background: #eef4fe; color: #2c5cb8; border: 1px solid #c7dafc; }
+  .badge-purple { background: #f3edfb; color: #6b4ea5; border: 1px solid #d9c8f7; }
+  .row-hover:hover { background: rgba(199, 218, 252, 0.18); }
+  .rank-medal {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px; height: 30px;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 13px;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+  .rank-1 { background: linear-gradient(135deg, #fde68a, #f59e0b); color: #783c0a; }
+  .rank-2 { background: linear-gradient(135deg, #e2e8f0, #94a3b8); color: #1e293b; }
+  .rank-3 { background: linear-gradient(135deg, #fed7aa, #c2410c); color: #6b1d04; }
+  .rank-other { background: rgba(15,23,42,0.05); color: var(--text-secondary); }
+
+  .section-divider {
+    display: flex; align-items: center; gap: 14px;
+    margin: 36px 0 18px 0;
+  }
+  .section-divider-line { flex:1; height: 1px; background: linear-gradient(90deg, rgba(15,23,42,0.08), transparent); }
+  .section-num {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #5b8def, #b89cf0);
+    color: white;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(91,141,239,0.3);
+  }
+
+  .insight-card {
+    padding: 18px 20px;
+    border-radius: 18px;
+    background: white;
+    border: 1px solid var(--border-soft);
+    border-left-width: 4px;
+  }
+  .insight-success { border-left-color: var(--pastel-green-strong); }
+  .insight-warn { border-left-color: var(--pastel-amber-strong); }
+  .insight-danger { border-left-color: var(--pastel-red-strong); }
+  .insight-info { border-left-color: var(--pastel-blue-deep); }
+
+  .filter-btn {
+    padding: 7px 14px;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: white;
+    border: 1px solid var(--border-soft);
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .filter-btn:hover { border-color: rgba(15,23,42,0.15); }
+  .filter-btn.active {
+    background: var(--text-primary);
+    color: white;
+    border-color: var(--text-primary);
+  }
+
+  .mini-bar {
+    display:inline-block;
+    height:6px;
+    background: rgba(15,23,42,0.06);
+    border-radius: 4px;
+    width: 80px;
+    position: relative;
+    vertical-align: middle;
+  }
+  .mini-bar-fill {
+    position:absolute; left:0; top:0; bottom:0;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div id="root"><div style="text-align:center;padding:80px;color:#64748b;font-family:sans-serif;">Đang tải dashboard...</div></div>
+
+<script type="text/babel" data-presets="react">
+const { useState, useMemo, useEffect } = React;
+const { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, AreaChart, ComposedChart, BarChart, Bar, ReferenceLine, Cell, PieChart, Pie } = Recharts;
+
+window.DASHBOARD_DATA = {"meta": {"month": 5, "year": 2026, "data_through": "25/05/2026", "total_days_complete": 25, "total_days_month": 31, "remaining_days": 6, "data_through_date": "26/05/2026"}, "overview": {"total_dt_dat": 8527346433.0, "total_dt_mt_full": 11303500000.0, "total_dt_mt_to_date": 9132450254.0, "pct_to_date": 93.37413504404292, "pct_full": 75.43987643650198, "total_orders": 8147, "total_orders_mt": 9173, "orders_pct": 88.81500054507795, "total_sp": 23430, "total_sp_mt": 27243, "sp_pct": 86.00374408104834, "total_traffic": 10721, "total_traffic_mt": 10858, "traffic_pct": 98.73825750598637, "avg_atv": 1046685.4588191973, "avg_upt": 2.875905241193077, "avg_crv": 75.99104561141684, "apr_25d_dat": 7207056800.0, "apr_25d_mt": 8450706192.0, "mom_growth": 18.319400965453745}, "forecast": {"last_7_avg": 381672840.71428573, "last_3_avg": 445971626.6666667, "last_14_avg": 353758087.14285713, "fc_base": 10817383477.285713, "fc_optimistic": 11203176193.0, "fc_conservative": 10649894955.857143, "fc_base_pct": 95.69941590910526, "fc_optimistic_pct": 99.11245360286637, "fc_conservative_pct": 94.21767555055641, "remaining_target": 2776153567.0, "daily_target_needed": 462692261.1666667, "gap_to_target_base": 486116522.7142868}, "daily": [{"date": "01/05", "day": 1, "dt_dat": 466015900.0, "dt_mt": 457026538.0, "don": 449.0, "don_mt": 454.0, "sp": 1043.0, "traffic": 632.0, "pct": 101.9669234174756}, {"date": "02/05", "day": 2, "dt_dat": 382015329.0, "dt_mt": 454954074.0, "don": 361.0, "don_mt": 455.0, "sp": 929.0, "traffic": 491.0, "pct": 83.96788837195905}, {"date": "03/05", "day": 3, "dt_dat": 369501174.0, "dt_mt": 460915838.0, "don": 351.0, "don_mt": 464.0, "sp": 1070.0, "traffic": 481.0, "pct": 80.1667340404996}, {"date": "04/05", "day": 4, "dt_dat": 206838100.0, "dt_mt": 269135874.0, "don": 208.0, "don_mt": 271.0, "sp": 586.0, "traffic": 281.0, "pct": 76.85266810622207}, {"date": "05/05", "day": 5, "dt_dat": 216897750.0, "dt_mt": 263496052.0, "don": 210.0, "don_mt": 267.0, "sp": 626.0, "traffic": 278.0, "pct": 82.31536994717476}, {"date": "06/05", "day": 6, "dt_dat": 231104500.0, "dt_mt": 296695157.0, "don": 226.0, "don_mt": 298.0, "sp": 625.0, "traffic": 298.0, "pct": 77.89291282567177}, {"date": "07/05", "day": 7, "dt_dat": 273927060.0, "dt_mt": 311885979.0, "don": 288.0, "don_mt": 313.0, "sp": 778.0, "traffic": 349.0, "pct": 87.82923197711303}, {"date": "08/05", "day": 8, "dt_dat": 281429107.0, "dt_mt": 331135979.0, "don": 297.0, "don_mt": 333.0, "sp": 795.0, "traffic": 382.0, "pct": 84.98898484238705}, {"date": "09/05", "day": 9, "dt_dat": 438714084.0, "dt_mt": 483365042.0, "don": 413.0, "don_mt": 486.0, "sp": 1151.0, "traffic": 525.0, "pct": 90.76247677836827}, {"date": "10/05", "day": 10, "dt_dat": 452798476.0, "dt_mt": 505754758.0, "don": 450.0, "don_mt": 509.0, "sp": 1332.0, "traffic": 599.0, "pct": 89.52925678654712}, {"date": "11/05", "day": 11, "dt_dat": 255491733.0, "dt_mt": 272695157.0, "don": 250.0, "don_mt": 275.0, "sp": 712.0, "traffic": 324.0, "pct": 93.6913349729933}, {"date": "12/05", "day": 12, "dt_dat": 233326150.0, "dt_mt": 278295157.0, "don": 229.0, "don_mt": 281.0, "sp": 664.0, "traffic": 312.0, "pct": 83.84125419760719}, {"date": "13/05", "day": 13, "dt_dat": 266885637.0, "dt_mt": 296695157.0, "don": 267.0, "don_mt": 299.0, "sp": 754.0, "traffic": 366.0, "pct": 89.95281207101064}, {"date": "14/05", "day": 14, "dt_dat": 282077063.0, "dt_mt": 304085979.0, "don": 281.0, "don_mt": 309.0, "sp": 770.0, "traffic": 373.0, "pct": 92.76227201517897}, {"date": "15/05", "day": 15, "dt_dat": 304783740.0, "dt_mt": 342534190.0, "don": 314.0, "don_mt": 339.0, "sp": 859.0, "traffic": 412.0, "pct": 88.9790709651495}, {"date": "16/05", "day": 16, "dt_dat": 445993775.0, "dt_mt": 503865042.0, "don": 393.0, "don_mt": 508.0, "sp": 1209.0, "traffic": 498.0, "pct": 88.51453024597805}, {"date": "17/05", "day": 17, "dt_dat": 493521870.0, "dt_mt": 512174221.0, "don": 465.0, "don_mt": 511.0, "sp": 1380.0, "traffic": 598.0, "pct": 96.3582019095803}, {"date": "18/05", "day": 18, "dt_dat": 254315100.0, "dt_mt": 267995157.0, "don": 228.0, "don_mt": 270.0, "sp": 684.0, "traffic": 303.0, "pct": 94.89540887487009}, {"date": "19/05", "day": 19, "dt_dat": 317946144.0, "dt_mt": 284895157.0, "don": 298.0, "don_mt": 288.0, "sp": 829.0, "traffic": 403.0, "pct": 111.60110524448122}, {"date": "20/05", "day": 20, "dt_dat": 341322960.0, "dt_mt": 300195157.0, "don": 321.0, "don_mt": 295.0, "sp": 900.0, "traffic": 408.0, "pct": 113.70035526589123}, {"date": "21/05", "day": 21, "dt_dat": 346879787.0, "dt_mt": 311385979.0, "don": 321.0, "don_mt": 313.0, "sp": 918.0, "traffic": 413.0, "pct": 111.39865324507755}, {"date": "22/05", "day": 22, "dt_dat": 327646114.0, "dt_mt": 352034190.0, "don": 313.0, "don_mt": 355.0, "sp": 905.0, "traffic": 414.0, "pct": 93.07224221601885}, {"date": "23/05", "day": 23, "dt_dat": 452457700.0, "dt_mt": 501865042.0, "don": 430.0, "don_mt": 505.0, "sp": 1317.0, "traffic": 540.0, "pct": 90.15525333203026}, {"date": "24/05", "day": 24, "dt_dat": 583209992.0, "dt_mt": 504174221.0, "don": 506.0, "don_mt": 509.0, "sp": 1767.0, "traffic": 679.0, "pct": 115.67628167168824}, {"date": "25/05", "day": 25, "dt_dat": 302247188.0, "dt_mt": 265195157.0, "don": 278.0, "don_mt": 266.0, "sp": 827.0, "traffic": 362.0, "pct": 113.97160921758463}], "weekly": [{"label": "Tuần 1", "range": "01/05 - 07/05", "dt_dat": 2146299813.0, "dt_mt": 2514109512.0, "don": 2093.0, "traffic": 2810.0, "sp": 5657.0, "pct": 85.3701798889658, "so_ngay": 7}, {"label": "Tuần 2", "range": "08/05 - 14/05", "dt_dat": 2210722250.0, "dt_mt": 2472027229.0, "don": 2187.0, "traffic": 2881.0, "sp": 6178.0, "pct": 89.42952666804949, "so_ngay": 7}, {"label": "Tuần 3", "range": "15/05 - 21/05", "dt_dat": 2504763376.0, "dt_mt": 2523044903.0, "don": 2340.0, "traffic": 3035.0, "sp": 6779.0, "pct": 99.27541808795148, "so_ngay": 7}, {"label": "Tuần 4", "range": "22/05 - 25/05", "dt_dat": 1665560994.0, "dt_mt": 1623268610.0, "don": 1527.0, "traffic": 1995.0, "sp": 4816.0, "pct": 102.60538420686889, "so_ngay": 4}], "stores": [{"name": "GUMAC- CN PHÚ YÊN", "rank": 1, "vung": "Miền Trung", "loai": "TRỰC THUỘC", "dt_dat": 243833537.0, "dt_mt": 188000000.0, "pct": 129.698689893617, "don": 171, "don_pct": 107.54716981132076, "traffic": 206, "traffic_pct": 109.57446808510637, "atv": 1383754.44, "atv_mt": 1200000.0, "upt": 4.12, "crv": 84.36, "crv_mt": 85.0, "group": "B3", "group_label": "Kém - chốt đơn yếu"}, {"name": "GUMAC- CN QUY NHƠN", "rank": 2, "vung": "Miền Trung", "loai": "TRỰC THUỘC", "dt_dat": 271972039.0, "dt_mt": 242000000.0, "pct": 112.38514008264463, "don": 184, "don_pct": 88.46153846153845, "traffic": 209, "traffic_pct": 86.36363636363636, "atv": 1482750.96, "atv_mt": 1200000.0, "upt": 4.36, "crv": 86.96, "crv_mt": 85.0, "group": "B5", "group_label": "Tốt - thiếu Traffic"}, {"name": "GUMAC- CN BẾN CÁT", "rank": 3, "vung": "Đông Nam Bộ", "loai": "ĐẠI LÝ", "dt_dat": 236953000.0, "dt_mt": 213000000.0, "pct": 111.24553990610329, "don": 206, "don_pct": 85.47717842323651, "traffic": 294, "traffic_pct": 97.02970297029702, "atv": 1221369.24, "atv_mt": 900000.0, "upt": 4.08, "crv": 72.68, "crv_mt": 85.0, "group": "B3", "group_label": "Kém - chốt đơn yếu"}, {"name": "GUMAC CMT8 CN2", "rank": 4, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 336505000.0, "dt_mt": 306000000.0, "pct": 109.96895424836602, "don": 337, "don_pct": 101.81268882175227, "traffic": 377, "traffic_pct": 96.91516709511568, "atv": 955297.96, "atv_mt": 940000.0, "upt": 2.92, "crv": 85.48, "crv_mt": 85.0, "group": "B1", "group_label": "Xuất sắc"}, {"name": "GUMAC Yersin Bình Dương", "rank": 5, "vung": "Đông Nam Bộ", "loai": "TRỰC THUỘC", "dt_dat": 262862184.0, "dt_mt": 242000000.0, "pct": 108.62073719008265, "don": 227, "don_pct": 82.84671532846716, "traffic": 286, "traffic_pct": 90.7936507936508, "atv": 1154257.2, "atv_mt": 900000.0, "upt": 3.32, "crv": 78.6, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC - CN 404 HOÀNG DIỆU ĐN", "rank": 6, "vung": "Miền Trung", "loai": "TRỰC THUỘC", "dt_dat": 254943389.0, "dt_mt": 243000000.0, "pct": 104.91497489711934, "don": 245, "don_pct": 117.22488038277513, "traffic": 291, "traffic_pct": 119.75308641975309, "atv": 1025297.8, "atv_mt": 1200000.0, "upt": 3.12, "crv": 83.0, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN QUẢNG NGÃI", "rank": 7, "vung": "Miền Trung", "loai": "TRỰC THUỘC", "dt_dat": 210876352.0, "dt_mt": 201000000.0, "pct": 104.913607960199, "don": 174, "don_pct": 86.56716417910447, "traffic": 217, "traffic_pct": 92.73504273504274, "atv": 1212288.24, "atv_mt": 1000000.0, "upt": 4.12, "crv": 78.52, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC- CN TRÀ VINH", "rank": 8, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 296654950.0, "dt_mt": 284000000.0, "pct": 104.45596830985914, "don": 266, "don_pct": 93.66197183098592, "traffic": 317, "traffic_pct": 94.06528189910979, "atv": 1086086.56, "atv_mt": 1000000.0, "upt": 0.0, "crv": 81.92, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC- CN RẠCH GIÁ", "rank": 9, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 207017219.0, "dt_mt": 199000000.0, "pct": 104.02875326633165, "don": 146, "don_pct": 101.38888888888889, "traffic": 181, "traffic_pct": 104.02298850574712, "atv": 1399208.6, "atv_mt": 1350000.0, "upt": 3.8, "crv": 79.48, "crv_mt": 85.0, "group": "B3", "group_label": "Kém - chốt đơn yếu"}, {"name": "GUMAC- CN ĐỖ XUÂN HỢP Q9", "rank": 10, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 247463190.0, "dt_mt": 238000000.0, "pct": 103.97613025210084, "don": 288, "don_pct": 107.0631970260223, "traffic": 330, "traffic_pct": 107.49185667752444, "atv": 851771.48, "atv_mt": 900000.0, "upt": 2.48, "crv": 89.72, "crv_mt": 85.0, "group": "B2", "group_label": "Tốt - thiếu ATV"}, {"name": "GUMAC- CN LŨY BÁN BÍCH", "rank": 11, "vung": "HCM", "loai": "ĐẠI LÝ", "dt_dat": 211924350.0, "dt_mt": 205000000.0, "pct": 103.37773170731708, "don": 166, "don_pct": 80.97560975609757, "traffic": 211, "traffic_pct": 86.47540983606558, "atv": 1259465.76, "atv_mt": 1000000.0, "upt": 3.52, "crv": 77.2, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC - CN VÕ VĂN NGÂN", "rank": 12, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 292631073.0, "dt_mt": 291000000.0, "pct": 100.560506185567, "don": 303, "don_pct": 93.51851851851852, "traffic": 353, "traffic_pct": 93.38624338624338, "atv": 957956.52, "atv_mt": 900000.0, "upt": 2.72, "crv": 85.16, "crv_mt": 85.0, "group": "B5", "group_label": "Tốt - thiếu Traffic"}, {"name": "GUMAC- CN CẦN THƠ", "rank": 13, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 475044379.0, "dt_mt": 474000000.0, "pct": 100.22033312236287, "don": 496, "don_pct": 104.64135021097047, "traffic": 698, "traffic_pct": 123.75886524822694, "atv": 959340.96, "atv_mt": 1000000.0, "upt": 2.6, "crv": 72.64, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN CAM RANH", "rank": 14, "vung": "Miền Trung", "loai": "TRỰC THUỘC", "dt_dat": 197244311.0, "dt_mt": 201342283.0, "pct": 97.96467391799665, "don": 157, "don_pct": 86.74033149171271, "traffic": 194, "traffic_pct": 92.82296650717703, "atv": 1206082.72, "atv_mt": 1100000.0, "upt": 3.68, "crv": 81.2, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC- CN VĨNH LONG", "rank": 15, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 196537013.0, "dt_mt": 201000000.0, "pct": 97.77960845771145, "don": 151, "don_pct": 93.20987654320987, "traffic": 175, "traffic_pct": 92.5925925925926, "atv": 1172868.16, "atv_mt": 1250000.0, "upt": 3.28, "crv": 83.16, "crv_mt": 85.0, "group": "B8", "group_label": "Báo động - cần can thiệp"}, {"name": "GUMAC- GIGAMALL THỦ ĐỨC", "rank": 16, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 472516950.0, "dt_mt": 493000000.0, "pct": 95.84522312373225, "don": 533, "don_pct": 97.26277372262774, "traffic": 639, "traffic_pct": 98.45916795069337, "atv": 884006.0, "atv_mt": 900000.0, "upt": 2.6, "crv": 84.16, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC - CN VŨNG TÀU", "rank": 17, "vung": "Đông Nam Bộ", "loai": "TRỰC THUỘC", "dt_dat": 244713250.0, "dt_mt": 256500000.0, "pct": 95.40477582846005, "don": 272, "don_pct": 96.79715302491103, "traffic": 335, "traffic_pct": 100.2994011976048, "atv": 877599.16, "atv_mt": 900000.0, "upt": 2.48, "crv": 79.24, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN PHAN RANG", "rank": 18, "vung": "Miền Trung", "loai": "TRỰC THUỘC", "dt_dat": 270822085.0, "dt_mt": 284057971.0, "pct": 95.34042788751736, "don": 267, "don_pct": 114.5922746781116, "traffic": 298, "traffic_pct": 107.97101449275361, "atv": 1002108.68, "atv_mt": 1200000.0, "upt": 3.24, "crv": 91.0, "crv_mt": 85.0, "group": "B2", "group_label": "Tốt - thiếu ATV"}, {"name": "GUMAC- CN NGUYỄN ẢNH THỦ HÓC MÔN", "rank": 19, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 266041850.0, "dt_mt": 282000000.0, "pct": 94.3410815602837, "don": 259, "don_pct": 82.22222222222221, "traffic": 313, "traffic_pct": 84.5945945945946, "atv": 1079604.96, "atv_mt": 900000.0, "upt": 3.2, "crv": 82.0, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "AEON TÂN PHÚ", "rank": 20, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 810420950.0, "dt_mt": 880000000.0, "pct": 92.09328977272727, "don": 776, "don_pct": 88.18181818181819, "traffic": 1380, "traffic_pct": 136.49851632047478, "atv": 1068493.84, "atv_mt": 1000000.0, "upt": 2.56, "crv": 55.64, "crv_mt": 87.0, "group": "B3", "group_label": "Kém - chốt đơn yếu"}, {"name": "GUMAC- CN PHAN CHU TRINH ĐẮK LẮK", "rank": 21, "vung": "Tây Nguyên", "loai": "TRỰC THUỘC", "dt_dat": 195036900.0, "dt_mt": 214000000.0, "pct": 91.138738317757, "don": 190, "don_pct": 88.78504672897196, "traffic": 267, "traffic_pct": 111.71548117154812, "atv": 947212.2, "atv_mt": 1000000.0, "upt": 2.8, "crv": 69.16, "crv_mt": 90.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN KON TUM", "rank": 22, "vung": "Tây Nguyên", "loai": "TRỰC THUỘC", "dt_dat": 154958975.0, "dt_mt": 177000000.0, "pct": 87.54744350282486, "don": 158, "don_pct": 87.77777777777777, "traffic": 181, "traffic_pct": 86.60287081339713, "atv": 973426.52, "atv_mt": 1000000.0, "upt": 2.72, "crv": 87.76, "crv_mt": 85.0, "group": "B6", "group_label": "Kém - 2 mặt yếu"}, {"name": "GUMAC- CN GIA LAI", "rank": 23, "vung": "Tây Nguyên", "loai": "TRỰC THUỘC", "dt_dat": 161121840.0, "dt_mt": 184500000.0, "pct": 87.32891056910569, "don": 150, "don_pct": 95.54140127388536, "traffic": 189, "traffic_pct": 103.84615384615385, "atv": 1061952.2, "atv_mt": 1200000.0, "upt": 3.24, "crv": 78.12, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN HẬU GIANG- Q6", "rank": 24, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 264508700.0, "dt_mt": 308000000.0, "pct": 85.87944805194805, "don": 291, "don_pct": 85.08771929824562, "traffic": 329, "traffic_pct": 81.43564356435643, "atv": 908876.04, "atv_mt": 900000.0, "upt": 2.64, "crv": 87.64, "crv_mt": 85.0, "group": "B5", "group_label": "Tốt - thiếu Traffic"}, {"name": "GUMAC- CN LONG XUYÊN", "rank": 25, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 178291640.0, "dt_mt": 210000000.0, "pct": 84.90078095238096, "don": 160, "don_pct": 78.04878048780488, "traffic": 204, "traffic_pct": 77.86259541984732, "atv": 1092537.2, "atv_mt": 1050000.0, "upt": 3.12, "crv": 79.6, "crv_mt": 77.0, "group": "B5", "group_label": "Tốt - thiếu Traffic"}, {"name": "GUMAC - CN CỦ CHI CN2", "rank": 26, "vung": "HCM", "loai": "ĐẠI LÝ", "dt_dat": 100719305.0, "dt_mt": 120000000.0, "pct": 83.93275416666667, "don": 117, "don_pct": 97.5, "traffic": 133, "traffic_pct": 100.75757575757575, "atv": 660107.36, "atv_mt": 1000000.0, "upt": 2.04, "crv": 120.88, "crv_mt": 90.0, "group": "B2", "group_label": "Tốt - thiếu ATV"}, {"name": "GUMAC- CN VINCOM CAO LÃNH", "rank": 27, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 164610300.0, "dt_mt": 200000000.0, "pct": 82.30515, "don": 166, "don_pct": 75.45454545454545, "traffic": 225, "traffic_pct": 79.7872340425532, "atv": 991410.56, "atv_mt": 900000.0, "upt": 3.2, "crv": 69.48, "crv_mt": 80.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC VC MEGA MALL OCEAN PARK", "rank": 28, "vung": "Miền Bắc", "loai": "TRỰC THUỘC", "dt_dat": 134711670.0, "dt_mt": 169000000.0, "pct": 79.7110473372781, "don": 171, "don_pct": 108.9171974522293, "traffic": 225, "traffic_pct": 126.40449438202248, "atv": 782410.6, "atv_mt": 1100000.0, "upt": 2.68, "crv": 69.2, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC - MỸ THO", "rank": 29, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 135174050.0, "dt_mt": 178000000.0, "pct": 75.94047752808989, "don": 109, "don_pct": 69.87179487179486, "traffic": 126, "traffic_pct": 67.37967914438502, "atv": 1131579.12, "atv_mt": 1100000.0, "upt": 3.2, "crv": 85.12, "crv_mt": 85.0, "group": "B5", "group_label": "Tốt - thiếu Traffic"}, {"name": "GUMAC - CN QUANG TRUNG", "rank": 30, "vung": "HCM", "loai": "ĐẠI LÝ", "dt_dat": 166146840.0, "dt_mt": 224000000.0, "pct": 74.17269642857143, "don": 174, "don_pct": 75.0, "traffic": 247, "traffic_pct": 83.16498316498317, "atv": 931625.0, "atv_mt": 950000.0, "upt": 2.44, "crv": 69.04, "crv_mt": 80.0, "group": "B8", "group_label": "Báo động - cần can thiệp"}, {"name": "GUMAC- CN LÊ VĂN SỸ CN2", "rank": 31, "vung": "HCM", "loai": "ĐẠI LÝ", "dt_dat": 171476000.0, "dt_mt": 232000000.0, "pct": 73.91206896551724, "don": 131, "don_pct": 56.46551724137932, "traffic": 318, "traffic_pct": 104.60526315789474, "atv": 762669.88, "atv_mt": 997920.0, "upt": 2.52, "crv": 41.6, "crv_mt": 80.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN 644 TÂY NINH", "rank": 32, "vung": "Đông Nam Bộ", "loai": "TRỰC THUỘC", "dt_dat": 129498400.0, "dt_mt": 175300000.0, "pct": 73.87244723331432, "don": 131, "don_pct": 67.5257731958763, "traffic": 173, "traffic_pct": 75.54585152838428, "atv": 952509.64, "atv_mt": 900000.0, "upt": 2.76, "crv": 76.16, "crv_mt": 85.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC- CN BIÊN HÒA 2", "rank": 33, "vung": "Đông Nam Bộ", "loai": "TRỰC THUỘC", "dt_dat": 147764900.0, "dt_mt": 201750000.0, "pct": 73.24158612143742, "don": 179, "don_pct": 74.89539748953975, "traffic": 321, "traffic_pct": 116.30434782608697, "atv": 828858.44, "atv_mt": 850000.0, "upt": 2.28, "crv": 55.48, "crv_mt": 85.0, "group": "B4", "group_label": "Kém - chuyển đổi yếu"}, {"name": "GUMAC- CN SÓC TRĂNG", "rank": 34, "vung": "Miền Tây", "loai": "TRỰC THUỘC", "dt_dat": 120317600.0, "dt_mt": 173000000.0, "pct": 69.54774566473988, "don": 91, "don_pct": 51.12359550561798, "traffic": 103, "traffic_pct": 50.0, "atv": 1226044.8, "atv_mt": 1000000.0, "upt": 3.32, "crv": 87.2, "crv_mt": 85.0, "group": "B5", "group_label": "Tốt - thiếu Traffic"}, {"name": "GUMAC - CN LONG KHÁNH", "rank": 35, "vung": "Đông Nam Bộ", "loai": "ĐẠI LÝ", "dt_dat": 138986790.0, "dt_mt": 201000000.0, "pct": 69.14765671641791, "don": 130, "don_pct": 63.725490196078425, "traffic": 159, "traffic_pct": 62.109375, "atv": 1081310.28, "atv_mt": 1000000.0, "upt": 3.04, "crv": 79.68, "crv_mt": 80.0, "group": "B7", "group_label": "Kém - chỉ bán giá trị cao"}, {"name": "GUMAC- CN ĐÀ LẠT", "rank": 36, "vung": "Tây Nguyên", "loai": "TRỰC THUỘC", "dt_dat": 101677450.0, "dt_mt": 148000000.0, "pct": 68.70097972972972, "don": 108, "don_pct": 87.8048780487805, "traffic": 138, "traffic_pct": 93.24324324324324, "atv": 961961.08, "atv_mt": 1200000.0, "upt": 2.68, "crv": 77.88, "crv_mt": 85.0, "group": "B8", "group_label": "Báo động - cần can thiệp"}, {"name": "GUMAC - Happiness Fashion Store", "rank": 37, "vung": "HCM", "loai": "TRỰC THUỘC", "dt_dat": 55368002.0, "dt_mt": 93000000.0, "pct": 59.53548602150538, "don": 67, "don_pct": 69.0721649484536, "traffic": 79, "traffic_pct": 71.17117117117117, "atv": 633422.56, "atv_mt": 1000000.0, "upt": 1.88, "crv": 65.68, "crv_mt": 87.0, "group": "B8", "group_label": "Báo động - cần can thiệp"}], "regions": [{"name": "Miền Trung", "dt_dat": 1449691713.0, "dt_mt": 1359400254.0, "pct": 106.64200692432708, "don": 1198, "sp": 4345, "traffic": 1415, "atv": 1218713.8066666666, "crv": 84.17333333333333, "so_ch": 6}, {"name": "HCM", "dt_dat": 3395722210.0, "dt_mt": 3672000000.0, "pct": 92.47609504357298, "don": 3442, "sp": 9300, "traffic": 4709, "atv": 842561.3353846153, "crv": 72.63076923076923, "so_ch": 13}, {"name": "Miền Tây", "dt_dat": 1773647151.0, "dt_mt": 1919000000.0, "pct": 92.42559411151642, "don": 1585, "sp": 4120, "traffic": 2029, "atv": 1132384.495, "crv": 79.825, "so_ch": 8}, {"name": "Đông Nam Bộ", "dt_dat": 1160778524.0, "dt_mt": 1289550000.0, "pct": 90.01423163118918, "don": 1145, "sp": 3401, "traffic": 1568, "atv": 873700.5657142857, "crv": 63.12, "so_ch": 7}, {"name": "Tây Nguyên", "dt_dat": 612795165.0, "dt_mt": 723500000.0, "pct": 84.69870974429855, "don": 606, "sp": 1822, "traffic": 775, "atv": 986138.0, "crv": 78.23, "so_ch": 4}, {"name": "Miền Bắc", "dt_dat": 134711670.0, "dt_mt": 169000000.0, "pct": 79.7110473372781, "don": 171, "sp": 442, "traffic": 225, "atv": 260803.53333333333, "crv": 23.066666666666666, "so_ch": 3}]};
+// === HELPERS ===
+const fmtNumber = (n, dec=0) => (n==null||isNaN(n))?'0':Number(n).toLocaleString('vi-VN',{maximumFractionDigits:dec,minimumFractionDigits:dec});
+const fmtCurrency = (n) => {
+  if (!n && n !== 0) return '0 ₫';
+  const abs = Math.abs(n);
+  if (abs >= 1e9) return (n/1e9).toFixed(2)+' tỷ';
+  if (abs >= 1e6) return (n/1e6).toFixed(1)+' tr';
+  if (abs >= 1e3) return (n/1e3).toFixed(0)+'k';
+  return fmtNumber(n);
+};
+const fmtCurrencyFull = (n) => fmtNumber(n)+' ₫';
+const fmtPct = (n, dec=1) => (n==null||isNaN(n))?'—':Number(n).toFixed(dec)+'%';
+
+const colorByPct = (p) => {
+  if (p >= 100) return '#6dc88a';
+  if (p >= 90) return '#5b8def';
+  if (p >= 75) return '#d4a849';
+  if (p >= 50) return '#ed9ebe';
+  return '#e57878';
+};
+
+const statusByPct = (p) => {
+  if (p >= 100) return { label: 'Đạt mục tiêu', cls: 'badge-success' };
+  if (p >= 90) return { label: 'Sát mục tiêu', cls: 'badge-info' };
+  if (p >= 75) return { label: 'Khả thi', cls: 'badge-warn' };
+  if (p >= 50) return { label: 'Cảnh báo', cls: 'badge-warn' };
+  return { label: 'Yếu', cls: 'badge-danger' };
+};
+
+// === ICONS ===
+const Icon = ({ d, size = 16, stroke = 2, className = '' }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+       strokeWidth={stroke} strokeLinecap="round" strokeLinejoin="round" className={className}
+       style={{display:'inline-block',verticalAlign:'-3px'}}
+       dangerouslySetInnerHTML={{__html: d}} />
+);
+const IconUp = (p) => <Icon {...p} d='<polyline points="18 15 12 9 6 15"/>' />;
+const IconDown = (p) => <Icon {...p} d='<polyline points="6 9 12 15 18 9"/>' />;
+const IconTrendUp = (p) => <Icon {...p} d='<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>' />;
+const IconTrendDown = (p) => <Icon {...p} d='<polyline points="22 17 13.5 8.5 8.5 13.5 2 7"/><polyline points="16 17 22 17 22 11"/>' />;
+const IconTarget = (p) => <Icon {...p} d='<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>' />;
+const IconStore = (p) => <Icon {...p} d='<path d="M3 9l1-6h16l1 6"/><path d="M3 9v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V9"/><path d="M9 21V12h6v9"/>' />;
+const IconChart = (p) => <Icon {...p} d='<line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/>' />;
+const IconCalendar = (p) => <Icon {...p} d='<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>' />;
+const IconCrystalBall = (p) => <Icon {...p} d='<circle cx="12" cy="14" r="7"/><path d="M5 21h14"/><path d="M9 11a3 3 0 0 1 3-3"/>' />;
+const IconMap = (p) => <Icon {...p} d='<polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/>' />;
+const IconTrophy = (p) => <Icon {...p} d='<line x1="6" y1="9" x2="18" y2="9"/><line x1="6" y1="9" x2="6" y2="4"/><line x1="18" y1="9" x2="18" y2="4"/><path d="M6 4h12"/><path d="M12 15a3 3 0 0 0 3-3V9H9v3a3 3 0 0 0 3 3z"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="8" y1="22" x2="16" y2="22"/><line x1="12" y1="19" x2="12" y2="22"/>' />;
+const IconLightbulb = (p) => <Icon {...p} d='<path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.7c.8.7 1.3 1.7 1.3 2.8V18h5.4v-.5c0-1.1.5-2.1 1.3-2.8A7 7 0 0 0 12 2z"/>' />;
+const IconAlert = (p) => <Icon {...p} d='<circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>' />;
+const IconCheck = (p) => <Icon {...p} d='<polyline points="20 6 9 17 4 12"/>' />;
+const IconArrowRight = (p) => <Icon {...p} d='<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>' />;
+const IconUsers = (p) => <Icon {...p} d='<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>' />;
+const IconPackage = (p) => <Icon {...p} d='<line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/>' />;
+// === COMPONENTS ===
+
+// Stat card lớn
+const BigStat = ({ accent, label, value, subValue, pct, trend, icon, delay=0 }) => (
+  <div className="stat-card fadeup" style={{animationDelay: `${delay}ms`}}>
+    <div className="stat-card-accent" style={{background: accent}}></div>
+    <div className="flex items-start justify-between mb-3">
+      <div className="flex items-center gap-2">
+        <div style={{width:34,height:34,borderRadius:11,background:`${accent}22`,color:accent,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          {icon}
+        </div>
+        <div className="text-[12px] font-medium text-slate-500 uppercase tracking-wider">{label}</div>
+      </div>
+      {trend != null && (
+        <span className={`pill ${trend >= 0 ? 'badge-success' : 'badge-danger'}`}>
+          {trend >= 0 ? <IconTrendUp size={11}/> : <IconTrendDown size={11}/>}
+          {' '}{Math.abs(trend).toFixed(1)}%
+        </span>
+      )}
+    </div>
+    <div className="display-font ticker" style={{fontSize:'28px',fontWeight:700,lineHeight:1.1,color:'var(--text-primary)'}}>
+      {value}
+    </div>
+    {subValue && <div className="text-[13px] text-slate-500 mt-1">{subValue}</div>}
+    {pct != null && (
+      <div className="mt-3">
+        <div className="progress-track">
+          <div className="progress-fill" style={{width: `${Math.min(pct,100)}%`, background: accent}}></div>
+        </div>
+        <div className="flex justify-between mt-1.5 text-[11px] text-slate-500">
+          <span>Tiến độ</span>
+          <span className="font-semibold" style={{color: accent}}>{fmtPct(pct)}</span>
+        </div>
+      </div>
+    )}
+  </div>
+);
+
+// Section header
+const SectionHeader = ({ num, title, subtitle, icon }) => (
+  <div className="section-divider">
+    <div className="section-num">{num}</div>
+    <div>
+      <div className="flex items-center gap-2">
+        {icon && <span style={{color:'var(--pastel-blue-deep)'}}>{icon}</span>}
+        <h2 className="display-font" style={{fontSize:'20px',fontWeight:700,margin:0}}>{title}</h2>
+      </div>
+      {subtitle && <div className="text-[12px] text-slate-500 mt-0.5">{subtitle}</div>}
+    </div>
+    <div className="section-divider-line"></div>
+  </div>
+);
+
+// Tooltip recharts custom
+const CustomTooltip = ({ active, payload, label, formatter }) => {
+  if (!active || !payload || !payload.length) return null;
+  return (
+    <div className="glass" style={{padding:'10px 14px', borderRadius:12, fontSize:12, minWidth:140}}>
+      <div style={{fontWeight:600, marginBottom:6, color:'var(--text-primary)'}}>{label}</div>
+      {payload.map((p,i) => (
+        <div key={i} style={{display:'flex', justifyContent:'space-between', gap:12, alignItems:'center', marginTop:3}}>
+          <span style={{color:p.color, fontWeight:500}}>● {p.name}</span>
+          <span style={{fontWeight:600, color:'var(--text-primary)'}} className="ticker">
+            {formatter ? formatter(p.value, p.name) : fmtCurrency(p.value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// =================
+// SECTION 1: TỔNG QUAN
+// =================
+const Section1 = ({ data }) => {
+  const o = data.overview;
+  const m = data.meta;
+  return (
+    <div>
+      <SectionHeader num="1" title="Tổng quan các chỉ số kinh doanh"
+        subtitle={`Dữ liệu cập nhật đến ngày ${m.data_through} • ${m.total_days_complete}/${m.total_days_month} ngày của tháng ${m.month}/${m.year}`}
+        icon={<IconChart size={18}/>} />
+
+      {/* 4 big stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <BigStat
+          accent="#5b8def"
+          label="Doanh thu"
+          value={fmtCurrency(o.total_dt_dat)}
+          subValue={`MT lũy kế: ${fmtCurrency(o.total_dt_mt_to_date)}`}
+          pct={o.pct_to_date}
+          trend={o.mom_growth}
+          icon={<IconTarget size={18}/>}
+          delay={0}
+        />
+        <BigStat
+          accent="#b89cf0"
+          label="Đơn hàng"
+          value={fmtNumber(o.total_orders)}
+          subValue={`MT lũy kế: ${fmtNumber(o.total_orders_mt)}`}
+          pct={o.orders_pct}
+          icon={<IconPackage size={18}/>}
+          delay={60}
+        />
+        <BigStat
+          accent="#ed9ebe"
+          label="Sản phẩm"
+          value={fmtNumber(o.total_sp)}
+          subValue={`MT lũy kế: ${fmtNumber(o.total_sp_mt)}`}
+          pct={o.sp_pct}
+          icon={<IconPackage size={18}/>}
+          delay={120}
+        />
+        <BigStat
+          accent="#6dc88a"
+          label="Lượt khách (Traffic)"
+          value={fmtNumber(o.total_traffic)}
+          subValue={`MT lũy kế: ${fmtNumber(o.total_traffic_mt)}`}
+          pct={o.traffic_pct}
+          icon={<IconUsers size={18}/>}
+          delay={180}
+        />
+      </div>
+
+      {/* 3 KPI nhỏ */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+        <div className="surface p-5 fadeup" style={{animationDelay:'240ms'}}>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">ATV trung bình</div>
+          <div className="display-font ticker mt-1" style={{fontSize:22, fontWeight:700}}>{fmtCurrency(o.avg_atv)}</div>
+          <div className="text-[12px] text-slate-500 mt-1">Giá trị / đơn hàng</div>
+        </div>
+        <div className="surface p-5 fadeup" style={{animationDelay:'300ms'}}>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">UPT trung bình</div>
+          <div className="display-font ticker mt-1" style={{fontSize:22, fontWeight:700}}>{o.avg_upt.toFixed(2)}</div>
+          <div className="text-[12px] text-slate-500 mt-1">Sản phẩm / đơn</div>
+        </div>
+        <div className="surface p-5 fadeup" style={{animationDelay:'360ms'}}>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">CRV trung bình</div>
+          <div className="display-font ticker mt-1" style={{fontSize:22, fontWeight:700}}>{o.avg_crv.toFixed(1)}%</div>
+          <div className="text-[12px] text-slate-500 mt-1">Tỷ lệ chuyển đổi</div>
+        </div>
+      </div>
+
+      {/* Biểu đồ theo ngày + bảng theo tuần */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+        <div className="surface p-5 lg:col-span-2 fadeup" style={{animationDelay:'420ms'}}>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="display-font font-bold text-[16px]">Doanh thu theo ngày</div>
+              <div className="text-[12px] text-slate-500">Thực đạt vs mục tiêu — {m.total_days_complete} ngày</div>
+            </div>
+            <div className="flex gap-2 text-[11px]">
+              <span className="flex items-center gap-1"><span style={{width:10,height:10,borderRadius:3,background:'#5b8def',display:'inline-block'}}></span>Đạt</span>
+              <span className="flex items-center gap-1"><span style={{width:10,height:10,borderRadius:3,background:'#cbd5e1',display:'inline-block'}}></span>Mục tiêu</span>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <ComposedChart data={data.daily} margin={{top:5,right:8,left:8,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+              <XAxis dataKey="date" fontSize={10} stroke="#94a3b8" interval={1}/>
+              <YAxis fontSize={10} stroke="#94a3b8" tickFormatter={(v)=>fmtCurrency(v)}/>
+              <Tooltip content={<CustomTooltip/>}/>
+              <Bar dataKey="dt_mt" fill="#cbd5e1" name="Mục tiêu" radius={[4,4,0,0]} barSize={14} opacity={0.6}/>
+              <Bar dataKey="dt_dat" fill="#5b8def" name="Đạt" radius={[4,4,0,0]} barSize={14}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="surface p-5 fadeup" style={{animationDelay:'480ms'}}>
+          <div className="display-font font-bold text-[16px] mb-1">Tổng theo tuần</div>
+          <div className="text-[12px] text-slate-500 mb-4">Doanh thu các tuần trong tháng</div>
+          <div className="space-y-3">
+            {data.weekly.map((w,i) => (
+              <div key={i} className="p-3 rounded-2xl" style={{background:'rgba(247,248,251,0.7)'}}>
+                <div className="flex justify-between items-center mb-1">
+                  <div>
+                    <div className="font-semibold text-[13px]">{w.label}</div>
+                    <div className="text-[11px] text-slate-500">{w.range} • {w.so_ngay} ngày</div>
+                  </div>
+                  <span className={`pill ${statusByPct(w.pct).cls}`}>{fmtPct(w.pct)}</span>
+                </div>
+                <div className="ticker font-semibold text-[14px] mt-1">{fmtCurrency(w.dt_dat)}</div>
+                <div className="text-[11px] text-slate-500">MT: {fmtCurrency(w.dt_mt)}</div>
+                <div className="progress-track mt-2" style={{height:5}}>
+                  <div className="progress-fill" style={{width:`${Math.min(w.pct,120)}%`, background: colorByPct(w.pct)}}></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+// =================
+// SECTION 2: DỰ BÁO
+// =================
+const Section2 = ({ data }) => {
+  const f = data.forecast;
+  const o = data.overview;
+  const m = data.meta;
+
+  // Tạo data chart dự báo: actual + forecast extension
+  const dailyData = data.daily.map(d => ({...d, type:'actual', forecast_base: null, forecast_opt: null, forecast_cons: null}));
+  const lastDay = dailyData[dailyData.length-1].day;
+  const fcData = [];
+  for (let i=1; i<=m.remaining_days; i++) {
+    fcData.push({
+      day: lastDay+i,
+      date: `${String(lastDay+i).padStart(2,'0')}/${String(m.month).padStart(2,'0')}`,
+      dt_dat: null,
+      dt_mt: null,
+      forecast_base: f.last_7_avg,
+      forecast_opt: f.last_3_avg,
+      forecast_cons: f.last_14_avg,
+      type:'forecast'
+    });
+  }
+  // Đường nối: thêm điểm chuyển tiếp
+  const lastActual = dailyData[dailyData.length-1];
+  if (lastActual) {
+    lastActual.forecast_base = lastActual.dt_dat;
+    lastActual.forecast_opt = lastActual.dt_dat;
+    lastActual.forecast_cons = lastActual.dt_dat;
+  }
+  const combinedData = [...dailyData, ...fcData];
+
+  return (
+    <div>
+      <SectionHeader num="2" title="Dự báo doanh số tháng 5/2026"
+        subtitle={`Phân tích kết quả thực đạt và dự báo đến hết tháng • Còn ${m.remaining_days} ngày`}
+        icon={<IconCrystalBall size={18}/>} />
+
+      {/* 3 KPI dự báo */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
+        <div className="stat-card fadeup" style={{animationDelay:'0ms'}}>
+          <div className="stat-card-accent" style={{background:'#5b8def'}}></div>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Thực đạt</div>
+          <div className="display-font ticker" style={{fontSize:24, fontWeight:700}}>{fmtCurrency(o.total_dt_dat)}</div>
+          <div className="text-[12px] text-slate-500 mt-1">{m.total_days_complete}/{m.total_days_month} ngày</div>
+          <div className="text-[12px] mt-2" style={{color:'var(--pastel-blue-deep)', fontWeight:600}}>
+            {fmtPct(o.pct_full)} của mục tiêu cả tháng
+          </div>
+        </div>
+
+        <div className="stat-card fadeup" style={{animationDelay:'60ms'}}>
+          <div className="stat-card-accent" style={{background:'#6dc88a'}}></div>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Dự báo cuối tháng</div>
+          <div className="display-font ticker" style={{fontSize:24, fontWeight:700}}>{fmtCurrency(f.fc_base)}</div>
+          <div className="text-[12px] text-slate-500 mt-1">Avg 7 ngày × {m.remaining_days} ngày còn lại</div>
+          <div className="text-[12px] mt-2" style={{color:'#2d6a47', fontWeight:600}}>
+            {fmtPct(f.fc_base_pct)} của mục tiêu cả tháng
+          </div>
+        </div>
+
+        <div className="stat-card fadeup" style={{animationDelay:'120ms'}}>
+          <div className="stat-card-accent" style={{background:'#d4a849'}}></div>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Gap còn lại để đạt MT</div>
+          <div className="display-font ticker" style={{fontSize:24, fontWeight:700}}>{fmtCurrency(f.gap_to_target_base)}</div>
+          <div className="text-[12px] text-slate-500 mt-1">Chênh lệch dự báo vs MT</div>
+          <div className="text-[12px] mt-2" style={{color:'#8a6611', fontWeight:600}}>
+            Cần đẩy thêm để đạt 100%
+          </div>
+        </div>
+
+        <div className="stat-card fadeup" style={{animationDelay:'180ms'}}>
+          <div className="stat-card-accent" style={{background:'#ed9ebe'}}></div>
+          <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold mb-2">Daily target cần đạt</div>
+          <div className="display-font ticker" style={{fontSize:24, fontWeight:700}}>{fmtCurrency(f.daily_target_needed)}</div>
+          <div className="text-[12px] text-slate-500 mt-1">Bình quân /ngày cho {m.remaining_days} ngày cuối</div>
+          <div className="text-[12px] mt-2" style={{color:'#9a3232', fontWeight:600}}>
+            Cao hơn avg hiện tại {fmtPct((f.daily_target_needed/f.last_7_avg-1)*100, 1)}
+          </div>
+        </div>
+      </div>
+
+      {/* Biểu đồ dự báo + 3 kịch bản */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-5">
+        <div className="surface p-5 lg:col-span-2 fadeup" style={{animationDelay:'240ms'}}>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="display-font font-bold text-[16px]">Đường cong doanh thu — Thực tế & Dự báo</div>
+              <div className="text-[12px] text-slate-500">Đường nét đứt là vùng dự báo (26-31/5)</div>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={combinedData} margin={{top:5,right:8,left:8,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false}/>
+              <XAxis dataKey="date" fontSize={10} stroke="#94a3b8" interval={2}/>
+              <YAxis fontSize={10} stroke="#94a3b8" tickFormatter={(v)=>fmtCurrency(v)}/>
+              <Tooltip content={<CustomTooltip/>}/>
+              <Area type="monotone" dataKey="dt_mt" fill="#e2e8f0" stroke="#cbd5e1" name="Mục tiêu" fillOpacity={0.5}/>
+              <Line type="monotone" dataKey="dt_dat" stroke="#5b8def" name="Thực đạt" strokeWidth={2.5} dot={{r:3}}/>
+              <Line type="monotone" dataKey="forecast_base" stroke="#6dc88a" name="Dự báo (base)" strokeWidth={2.5} strokeDasharray="6 4" dot={false}/>
+              <Line type="monotone" dataKey="forecast_opt" stroke="#b89cf0" name="Lạc quan" strokeWidth={1.8} strokeDasharray="3 3" dot={false}/>
+              <Line type="monotone" dataKey="forecast_cons" stroke="#ed9ebe" name="Thận trọng" strokeWidth={1.8} strokeDasharray="3 3" dot={false}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="space-y-4 fadeup" style={{animationDelay:'300ms'}}>
+          <div className="display-font font-bold text-[15px] mb-1">3 kịch bản dự báo</div>
+
+          {/* Lạc quan */}
+          <div className="surface p-4">
+            <div className="flex justify-between items-start mb-1">
+              <div className="flex items-center gap-2">
+                <span className="pill badge-purple">Lạc quan</span>
+              </div>
+              <span className="text-[11px] text-slate-500">Avg 3 ngày gần</span>
+            </div>
+            <div className="ticker font-bold text-[18px] mt-1 display-font">{fmtCurrency(f.fc_optimistic)}</div>
+            <div className="text-[12px] text-slate-500">{fmtPct(f.fc_optimistic_pct)} mục tiêu</div>
+            <div className="progress-track mt-2"><div className="progress-fill" style={{width:`${Math.min(f.fc_optimistic_pct,100)}%`, background:'#b89cf0'}}></div></div>
+          </div>
+
+          {/* Base */}
+          <div className="surface p-4" style={{borderColor:'#6dc88a', borderWidth:2}}>
+            <div className="flex justify-between items-start mb-1">
+              <div className="flex items-center gap-2">
+                <span className="pill badge-success">Cơ sở (Base)</span>
+              </div>
+              <span className="text-[11px] text-slate-500">Avg 7 ngày gần</span>
+            </div>
+            <div className="ticker font-bold text-[18px] mt-1 display-font">{fmtCurrency(f.fc_base)}</div>
+            <div className="text-[12px] text-slate-500">{fmtPct(f.fc_base_pct)} mục tiêu</div>
+            <div className="progress-track mt-2"><div className="progress-fill" style={{width:`${Math.min(f.fc_base_pct,100)}%`, background:'#6dc88a'}}></div></div>
+          </div>
+
+          {/* Thận trọng */}
+          <div className="surface p-4">
+            <div className="flex justify-between items-start mb-1">
+              <div className="flex items-center gap-2">
+                <span className="pill badge-warn">Thận trọng</span>
+              </div>
+              <span className="text-[11px] text-slate-500">Avg 14 ngày gần</span>
+            </div>
+            <div className="ticker font-bold text-[18px] mt-1 display-font">{fmtCurrency(f.fc_conservative)}</div>
+            <div className="text-[12px] text-slate-500">{fmtPct(f.fc_conservative_pct)} mục tiêu</div>
+            <div className="progress-track mt-2"><div className="progress-fill" style={{width:`${Math.min(f.fc_conservative_pct,100)}%`, background:'#d4a849'}}></div></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bảng so sánh */}
+      <div className="surface p-5 mt-5 fadeup" style={{animationDelay:'360ms'}}>
+        <div className="display-font font-bold text-[16px] mb-3">So sánh nhanh các chỉ tiêu</div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 rounded-2xl" style={{background:'rgba(199,218,252,0.15)'}}>
+            <div className="text-[11px] uppercase font-semibold text-slate-500">So với tháng 4 cùng kỳ</div>
+            <div className="ticker font-bold display-font text-[20px] mt-1" style={{color: o.mom_growth>=0?'#2d6a47':'#9a3232'}}>
+              {o.mom_growth>=0?'+':''}{o.mom_growth.toFixed(1)}%
+            </div>
+            <div className="text-[12px] text-slate-500 mt-1">T4 (1-25): {fmtCurrency(o.apr_25d_dat)}</div>
+          </div>
+          <div className="p-4 rounded-2xl" style={{background:'rgba(185,230,201,0.20)'}}>
+            <div className="text-[11px] uppercase font-semibold text-slate-500">Tiến độ vs MT cả tháng</div>
+            <div className="ticker font-bold display-font text-[20px] mt-1" style={{color:'#2d6a47'}}>
+              {fmtPct(o.pct_full)}
+            </div>
+            <div className="text-[12px] text-slate-500 mt-1">Còn {fmtPct(100-o.pct_full)} để đạt 100%</div>
+          </div>
+          <div className="p-4 rounded-2xl" style={{background:'rgba(247,200,220,0.18)'}}>
+            <div className="text-[11px] uppercase font-semibold text-slate-500">Khả năng đạt MT (Base)</div>
+            <div className="ticker font-bold display-font text-[20px] mt-1" style={{color: f.fc_base_pct>=95?'#2d6a47':'#8a6611'}}>
+              {f.fc_base_pct>=98?'Cao':f.fc_base_pct>=92?'Khả thi':'Thấp'}
+            </div>
+            <div className="text-[12px] text-slate-500 mt-1">Dự kiến: {fmtPct(f.fc_base_pct)}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+// =================
+// SECTION 3: CHI TIẾT VÙNG & CỬA HÀNG
+// =================
+const Section3 = ({ data }) => {
+  const [selectedRegion, setSelectedRegion] = useState('all');
+  const [search, setSearch] = useState('');
+
+  const filteredStores = useMemo(() => {
+    let s = data.stores;
+    if (selectedRegion !== 'all') s = s.filter(x => x.vung === selectedRegion);
+    if (search) s = s.filter(x => x.name.toLowerCase().includes(search.toLowerCase()));
+    return s;
+  }, [data.stores, selectedRegion, search]);
+
+  const regionPalette = ['#5b8def','#b89cf0','#ed9ebe','#6dc88a','#d4a849','#e57878'];
+
+  return (
+    <div>
+      <SectionHeader num="3" title="Chi tiết theo khu vực & cửa hàng"
+        subtitle="Phân tích sâu hiệu quả theo vùng và từng chi nhánh"
+        icon={<IconMap size={18}/>} />
+
+      {/* Vùng cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mt-4">
+        {data.regions.map((r,i) => (
+          <div key={i} className="stat-card cursor-pointer fadeup" style={{animationDelay:`${i*50}ms`}}
+               onClick={() => setSelectedRegion(selectedRegion === r.name ? 'all' : r.name)}>
+            <div className="stat-card-accent" style={{background: regionPalette[i % regionPalette.length]}}></div>
+            <div className="flex justify-between items-start mb-2">
+              <div className="text-[11px] text-slate-500 font-semibold uppercase tracking-wider">{r.name}</div>
+              <span className={`pill ${statusByPct(r.pct).cls}`} style={{fontSize:10, padding:'3px 7px'}}>{fmtPct(r.pct,0)}</span>
+            </div>
+            <div className="ticker display-font font-bold text-[18px]">{fmtCurrency(r.dt_dat)}</div>
+            <div className="text-[11px] text-slate-500 mt-0.5">MT: {fmtCurrency(r.dt_mt)}</div>
+            <div className="progress-track mt-2" style={{height:5}}>
+              <div className="progress-fill" style={{width:`${Math.min(r.pct,120)}%`, background: colorByPct(r.pct)}}></div>
+            </div>
+            <div className="flex justify-between mt-2 text-[11px] text-slate-500">
+              <span>{r.so_ch} cửa hàng</span>
+              <span>{fmtNumber(r.don)} đơn</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Biểu đồ vùng so sánh + radar/scatter */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-5">
+        <div className="surface p-5 fadeup" style={{animationDelay:'300ms'}}>
+          <div className="display-font font-bold text-[16px] mb-1">So sánh hiệu quả các vùng</div>
+          <div className="text-[12px] text-slate-500 mb-4">Doanh thu đạt vs mục tiêu</div>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={data.regions} layout="vertical" margin={{top:5,right:20,left:0,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
+              <XAxis type="number" fontSize={10} stroke="#94a3b8" tickFormatter={(v)=>fmtCurrency(v)}/>
+              <YAxis type="category" dataKey="name" fontSize={11} stroke="#94a3b8" width={90}/>
+              <Tooltip content={<CustomTooltip/>}/>
+              <Bar dataKey="dt_mt" fill="#cbd5e1" name="Mục tiêu" radius={[0,4,4,0]} barSize={12} opacity={0.5}/>
+              <Bar dataKey="dt_dat" fill="#5b8def" name="Đạt" radius={[0,4,4,0]} barSize={12}>
+                {data.regions.map((r, i) => <Cell key={i} fill={colorByPct(r.pct)} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="surface p-5 fadeup" style={{animationDelay:'360ms'}}>
+          <div className="display-font font-bold text-[16px] mb-1">Phân bố doanh thu theo vùng</div>
+          <div className="text-[12px] text-slate-500 mb-4">% đóng góp vào tổng doanh thu</div>
+          <ResponsiveContainer width="100%" height={260}>
+            <PieChart>
+              <Pie data={data.regions} dataKey="dt_dat" nameKey="name" cx="50%" cy="50%"
+                   innerRadius={55} outerRadius={95} paddingAngle={2} labelLine={false}
+                   label={({name, percent}) => `${(percent*100).toFixed(0)}%`}>
+                {data.regions.map((r, i) => <Cell key={i} fill={regionPalette[i % regionPalette.length]} />)}
+              </Pie>
+              <Tooltip content={<CustomTooltip/>}/>
+              <Legend iconType="circle" wrapperStyle={{fontSize:11}}/>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Bảng cửa hàng chi tiết */}
+      <div className="surface p-5 mt-5 fadeup" style={{animationDelay:'420ms'}}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+          <div>
+            <div className="display-font font-bold text-[16px]">Chi tiết từng cửa hàng</div>
+            <div className="text-[12px] text-slate-500">{filteredStores.length} cửa hàng • Lọc theo vùng và tìm kiếm</div>
+          </div>
+          <div className="flex gap-2 flex-wrap items-center">
+            <input type="text" placeholder="Tìm cửa hàng..." value={search} onChange={e=>setSearch(e.target.value)}
+                   style={{padding:'8px 14px', border:'1px solid var(--border-soft)', borderRadius:11,
+                           fontSize:13, outline:'none', width:200, background:'white'}} />
+          </div>
+        </div>
+
+        <div className="flex gap-1.5 flex-wrap mb-4">
+          <button onClick={()=>setSelectedRegion('all')} className={`filter-btn ${selectedRegion==='all'?'active':''}`}>Tất cả</button>
+          {data.regions.map(r => (
+            <button key={r.name} onClick={()=>setSelectedRegion(r.name)} className={`filter-btn ${selectedRegion===r.name?'active':''}`}>{r.name}</button>
+          ))}
+        </div>
+
+        <div style={{maxHeight:520, overflowY:'auto'}}>
+          <table className="w-full text-[12.5px]">
+            <thead style={{position:'sticky', top:0, background:'white', zIndex:2}}>
+              <tr style={{borderBottom:'1px solid var(--border-soft)'}}>
+                <th className="text-left py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">#</th>
+                <th className="text-left py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">Cửa hàng</th>
+                <th className="text-left py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">Vùng</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">DT đạt</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">DT MT</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">% HT</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">Đơn</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">Traffic</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">ATV</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">CRV</th>
+                <th className="text-right py-2.5 px-2 font-semibold text-slate-500 text-[11px] uppercase tracking-wider">UPT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStores.map((s, i) => (
+                <tr key={s.name} className="row-hover" style={{borderBottom:'1px solid rgba(15,23,42,0.04)'}}>
+                  <td className="py-2.5 px-2 text-slate-500 font-semibold">{i+1}</td>
+                  <td className="py-2.5 px-2 font-medium">{s.name.replace('GUMAC-','').replace('GUMAC ','').trim()}</td>
+                  <td className="py-2.5 px-2">
+                    <span className="pill badge-info" style={{fontSize:10, padding:'2px 8px'}}>{s.vung}</span>
+                  </td>
+                  <td className="py-2.5 px-2 text-right ticker font-semibold">{fmtCurrency(s.dt_dat)}</td>
+                  <td className="py-2.5 px-2 text-right ticker text-slate-500">{fmtCurrency(s.dt_mt)}</td>
+                  <td className="py-2.5 px-2 text-right">
+                    <span style={{color: colorByPct(s.pct), fontWeight:600}} className="ticker">{fmtPct(s.pct,1)}</span>
+                  </td>
+                  <td className="py-2.5 px-2 text-right ticker">{fmtNumber(s.don)}</td>
+                  <td className="py-2.5 px-2 text-right ticker">{fmtNumber(s.traffic)}</td>
+                  <td className="py-2.5 px-2 text-right ticker">{fmtCurrency(s.atv)}</td>
+                  <td className="py-2.5 px-2 text-right ticker">{s.crv.toFixed(0)}%</td>
+                  <td className="py-2.5 px-2 text-right ticker">{s.upt.toFixed(1)}</td>
+                </tr>
+              ))}
+              {filteredStores.length === 0 && (
+                <tr><td colSpan="11" className="text-center py-8 text-slate-400">Không có cửa hàng phù hợp</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+// =================
+// SECTION 4: XẾP HẠNG CỬA HÀNG
+// =================
+const Section4 = ({ data }) => {
+  const sortedByPct = [...data.stores].sort((a,b) => b.pct - a.pct);
+  const top5 = sortedByPct.slice(0, 5);
+  const bottom5 = sortedByPct.slice(-5).reverse();
+
+  // Top theo doanh thu tuyệt đối
+  const sortedByDT = [...data.stores].sort((a,b) => b.dt_dat - a.dt_dat).slice(0, 10);
+
+  const RankCard = ({ store, idx, type='top' }) => {
+    const isTop = type === 'top';
+    const rankClass = idx === 0 ? 'rank-1' : idx === 1 ? 'rank-2' : idx === 2 ? 'rank-3' : 'rank-other';
+    return (
+      <div className="p-3.5 rounded-2xl" style={{background: isTop ? 'rgba(185,230,201,0.18)' : 'rgba(245,185,185,0.15)',
+                                                  border: `1px solid ${isTop?'rgba(109,200,138,0.3)':'rgba(229,120,120,0.3)'}`}}>
+        <div className="flex items-center gap-3">
+          <div className={`rank-medal ${rankClass}`}>{idx+1}</div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-[13px] truncate">{store.name.replace('GUMAC-','').replace('GUMAC ','').trim()}</div>
+            <div className="text-[11px] text-slate-500">{store.vung} • {store.loai}</div>
+          </div>
+          <div className="text-right">
+            <div className="ticker font-bold display-font text-[15px]" style={{color: colorByPct(store.pct)}}>{fmtPct(store.pct,1)}</div>
+            <div className="text-[11px] text-slate-500 ticker">{fmtCurrency(store.dt_dat)}</div>
+          </div>
+        </div>
+        <div className="progress-track mt-2" style={{height:5}}>
+          <div className="progress-fill" style={{width:`${Math.min(store.pct,120)}%`, background: colorByPct(store.pct)}}></div>
+        </div>
+      </div>
+    );
+  };
+
+  return (
+    <div>
+      <SectionHeader num="4" title="Xếp hạng cửa hàng" subtitle="Top dẫn đầu, nhóm cần hỗ trợ và phân loại sức khỏe vận hành"
+        icon={<IconTrophy size={18}/>} />
+
+      {/* Top & Bottom 5 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-4">
+        <div className="surface p-5 fadeup" style={{animationDelay:'0ms'}}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div style={{width:32,height:32,borderRadius:10,background:'#e8f5ee',color:'#2d6a47',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <IconTrophy size={16}/>
+              </div>
+              <div>
+                <div className="display-font font-bold text-[16px]">Top 5 dẫn đầu</div>
+                <div className="text-[11px] text-slate-500">% hoàn thành mục tiêu cao nhất</div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2.5">
+            {top5.map((s,i) => <RankCard key={s.name} store={s} idx={i} type="top"/>)}
+          </div>
+        </div>
+
+        <div className="surface p-5 fadeup" style={{animationDelay:'120ms'}}>
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div style={{width:32,height:32,borderRadius:10,background:'#fdecec',color:'#9a3232',display:'flex',alignItems:'center',justifyContent:'center'}}>
+                <IconAlert size={16}/>
+              </div>
+              <div>
+                <div className="display-font font-bold text-[16px]">Top 5 cần hỗ trợ</div>
+                <div className="text-[11px] text-slate-500">% hoàn thành thấp nhất</div>
+              </div>
+            </div>
+          </div>
+          <div className="space-y-2.5">
+            {bottom5.map((s,i) => <RankCard key={s.name} store={s} idx={i} type="bottom"/>)}
+          </div>
+        </div>
+      </div>
+
+      {/* Top 10 doanh thu tuyệt đối */}
+      <div className="surface p-5 mt-5 fadeup" style={{animationDelay:'240ms'}}>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="display-font font-bold text-[16px]">Top 10 cửa hàng theo doanh thu tuyệt đối</div>
+            <div className="text-[12px] text-slate-500">Đóng góp doanh thu lớn nhất tháng 5/2026</div>
+          </div>
+        </div>
+        <ResponsiveContainer width="100%" height={320}>
+          <BarChart data={sortedByDT} layout="vertical" margin={{top:5,right:30,left:0,bottom:0}}>
+            <CartesianGrid strokeDasharray="3 3" horizontal={false}/>
+            <XAxis type="number" fontSize={10} stroke="#94a3b8" tickFormatter={(v)=>fmtCurrency(v)}/>
+            <YAxis type="category" dataKey="name" fontSize={10} stroke="#475569" width={180}
+                   tickFormatter={(v) => v.replace('GUMAC-','').replace('GUMAC ','').trim().slice(0,28)}/>
+            <Tooltip content={<CustomTooltip/>}/>
+            <Bar dataKey="dt_dat" fill="#5b8def" name="Doanh thu đạt" radius={[0,4,4,0]} barSize={16}>
+              {sortedByDT.map((s, i) => <Cell key={i} fill={colorByPct(s.pct)} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Phân loại sức khỏe vận hành B1-B8 */}
+      <div className="surface p-5 mt-5 fadeup" style={{animationDelay:'300ms'}}>
+        <div className="mb-4">
+          <div className="display-font font-bold text-[16px]">Phân loại sức khỏe vận hành</div>
+          <div className="text-[12px] text-slate-500">Dựa trên 3 trục: Traffic, CRV (chốt đơn), ATV (giá trị đơn)</div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+          {[
+            {g:'B1', label:'Xuất sắc', color:'#6dc88a', bg:'#e8f5ee'},
+            {g:'B2', label:'Thiếu ATV', color:'#d4a849', bg:'#fdf6e3'},
+            {g:'B3', label:'Chốt đơn yếu', color:'#e57878', bg:'#fdecec'},
+            {g:'B4', label:'Chuyển đổi yếu', color:'#e57878', bg:'#fdecec'},
+            {g:'B5', label:'Thiếu Traffic', color:'#d4a849', bg:'#fdf6e3'},
+            {g:'B6', label:'2 mặt yếu', color:'#e57878', bg:'#fdecec'},
+            {g:'B7', label:'Chỉ bán cao giá', color:'#e57878', bg:'#fdecec'},
+            {g:'B8', label:'Báo động', color:'#c95757', bg:'#fce0e0'},
+          ].map(g => {
+            const cnt = data.stores.filter(s => s.group === g.g).length;
+            return (
+              <div key={g.g} className="p-3 rounded-2xl" style={{background: g.bg, borderLeft:`4px solid ${g.color}`}}>
+                <div className="flex justify-between items-start">
+                  <span className="text-[10px] font-bold text-slate-500">{g.g}</span>
+                  <span className="ticker font-bold display-font text-[18px]" style={{color: g.color}}>{cnt}</span>
+                </div>
+                <div className="text-[11.5px] font-semibold mt-1" style={{color: g.color}}>{g.label}</div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{maxHeight: 360, overflowY:'auto'}}>
+          <table className="w-full text-[12px]">
+            <thead style={{position:'sticky', top:0, background:'white'}}>
+              <tr style={{borderBottom:'1px solid var(--border-soft)'}}>
+                <th className="text-left py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">Nhóm</th>
+                <th className="text-left py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">Cửa hàng</th>
+                <th className="text-left py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">Vùng</th>
+                <th className="text-right py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">Traffic</th>
+                <th className="text-right py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">CRV</th>
+                <th className="text-right py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">ATV</th>
+                <th className="text-right py-2 px-2 font-semibold text-slate-500 text-[10px] uppercase tracking-wider">% HT</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[...data.stores].sort((a,b) => a.group.localeCompare(b.group)).map((s) => {
+                const groupColor = {
+                  B1:'#6dc88a', B2:'#d4a849', B3:'#e57878', B4:'#e57878',
+                  B5:'#d4a849', B6:'#e57878', B7:'#e57878', B8:'#c95757'
+                }[s.group];
+                return (
+                  <tr key={s.name} className="row-hover" style={{borderBottom:'1px solid rgba(15,23,42,0.04)'}}>
+                    <td className="py-2 px-2"><span className="pill" style={{background:`${groupColor}22`, color:groupColor, fontSize:10, padding:'2px 8px'}}>{s.group} • {s.group_label}</span></td>
+                    <td className="py-2 px-2 font-medium">{s.name.replace('GUMAC-','').replace('GUMAC ','').trim()}</td>
+                    <td className="py-2 px-2 text-slate-500">{s.vung}</td>
+                    <td className="py-2 px-2 text-right ticker">{fmtPct(s.traffic_pct,0)}</td>
+                    <td className="py-2 px-2 text-right ticker">{s.crv.toFixed(0)}% / {s.crv_mt.toFixed(0)}%</td>
+                    <td className="py-2 px-2 text-right ticker">{fmtCurrency(s.atv)}</td>
+                    <td className="py-2 px-2 text-right ticker font-semibold" style={{color: colorByPct(s.pct)}}>{fmtPct(s.pct,1)}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// =================
+// SECTION 5: NHẬN ĐỊNH & ĐỀ XUẤT
+// =================
+const Section5 = ({ data }) => {
+  const o = data.overview;
+  const f = data.forecast;
+  const m = data.meta;
+
+  // Tự động sinh insights từ data
+  const top1 = [...data.stores].sort((a,b) => b.pct - a.pct)[0];
+  const bottom1 = [...data.stores].filter(s => s.pct < 60).sort((a,b) => a.pct - b.pct);
+  const bestRegion = [...data.regions].sort((a,b) => b.pct - a.pct)[0];
+  const worstRegion = [...data.regions].sort((a,b) => a.pct - b.pct)[0];
+  const b8Stores = data.stores.filter(s => s.group === 'B8');
+  const b1Stores = data.stores.filter(s => s.group === 'B1');
+
+  return (
+    <div>
+      <SectionHeader num="5" title="Nhận định chung & Đề xuất" subtitle="Tổng kết tình hình kinh doanh và hành động ưu tiên"
+        icon={<IconLightbulb size={18}/>} />
+
+      {/* Tổng kết tình hình */}
+      <div className="surface-elevated p-6 mt-4 fadeup" style={{animationDelay:'0ms'}}>
+        <div className="flex items-start gap-4">
+          <div style={{width:48,height:48,borderRadius:14,background:'linear-gradient(135deg,#c7dafc,#d9c8f7)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <IconLightbulb size={24}/>
+          </div>
+          <div className="flex-1">
+            <div className="display-font font-bold text-[18px] mb-2">Bức tranh tổng thể tháng 5/2026</div>
+            <p className="text-[13.5px] text-slate-600 leading-relaxed">
+              Sau {m.total_days_complete}/{m.total_days_month} ngày, GUMAC đã ghi nhận doanh thu <strong className="text-slate-800">{fmtCurrencyFull(o.total_dt_dat)}</strong>,
+              hoàn thành <strong style={{color: colorByPct(o.pct_to_date)}}>{fmtPct(o.pct_to_date)}</strong> mục tiêu lũy kế và{' '}
+              <strong style={{color: colorByPct(o.pct_full)}}>{fmtPct(o.pct_full)}</strong> mục tiêu cả tháng.
+              Tăng trưởng <strong style={{color: o.mom_growth>=0?'#2d6a47':'#9a3232'}}>{o.mom_growth>=0?'+':''}{o.mom_growth.toFixed(1)}%</strong> so với tháng 4 cùng kỳ
+              cho thấy động lực kinh doanh đang đi đúng hướng. Với tốc độ hiện tại, dự báo cuối tháng đạt{' '}
+              <strong className="text-slate-800">{fmtCurrency(f.fc_base)}</strong> (<strong style={{color: colorByPct(f.fc_base_pct)}}>{fmtPct(f.fc_base_pct)}</strong> mục tiêu).
+              Còn <strong className="text-slate-800">{m.remaining_days} ngày</strong> để{' '}
+              {f.fc_base_pct >= 98 ? 'duy trì đà tăng trưởng' : f.fc_base_pct >= 92 ? 'tăng tốc và rút ngắn khoảng cách với mục tiêu' : 'triển khai các giải pháp mạnh tay'}.
+            </p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
+          <div className="p-3 rounded-2xl" style={{background:'rgba(185,230,201,0.20)'}}>
+            <div className="text-[11px] text-slate-500 font-semibold uppercase">Cửa hàng đạt mục tiêu</div>
+            <div className="ticker display-font font-bold text-[20px]" style={{color:'#2d6a47'}}>{data.stores.filter(s=>s.pct>=100).length}</div>
+            <div className="text-[11px] text-slate-500">/{data.stores.length} cửa hàng</div>
+          </div>
+          <div className="p-3 rounded-2xl" style={{background:'rgba(199,218,252,0.20)'}}>
+            <div className="text-[11px] text-slate-500 font-semibold uppercase">Sát mục tiêu (90-100%)</div>
+            <div className="ticker display-font font-bold text-[20px]" style={{color:'var(--pastel-blue-deep)'}}>{data.stores.filter(s=>s.pct>=90 && s.pct<100).length}</div>
+            <div className="text-[11px] text-slate-500">cần đẩy thêm</div>
+          </div>
+          <div className="p-3 rounded-2xl" style={{background:'rgba(248,220,174,0.25)'}}>
+            <div className="text-[11px] text-slate-500 font-semibold uppercase">Cảnh báo (60-90%)</div>
+            <div className="ticker display-font font-bold text-[20px]" style={{color:'#8a6611'}}>{data.stores.filter(s=>s.pct>=60 && s.pct<90).length}</div>
+            <div className="text-[11px] text-slate-500">cần hỗ trợ</div>
+          </div>
+          <div className="p-3 rounded-2xl" style={{background:'rgba(245,185,185,0.25)'}}>
+            <div className="text-[11px] text-slate-500 font-semibold uppercase">Báo động (&lt;60%)</div>
+            <div className="ticker display-font font-bold text-[20px]" style={{color:'#9a3232'}}>{data.stores.filter(s=>s.pct<60).length}</div>
+            <div className="text-[11px] text-slate-500">cần can thiệp</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Insights */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+        <div className="insight-card insight-success fadeup" style={{animationDelay:'60ms'}}>
+          <div className="flex items-center gap-2 mb-2">
+            <IconCheck size={16} className="text-green-700"/>
+            <div className="font-semibold text-[13px]">Điểm sáng</div>
+          </div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 ml-1">
+            <li>• Vùng <strong>{bestRegion.name}</strong> dẫn đầu với <strong>{fmtPct(bestRegion.pct)}</strong> ({bestRegion.so_ch} CH)</li>
+            <li>• Cửa hàng <strong>{top1.name.replace('GUMAC-','').replace('GUMAC ','').trim()}</strong> hoàn thành <strong>{fmtPct(top1.pct)}</strong></li>
+            <li>• Tăng trưởng <strong>+{o.mom_growth.toFixed(1)}%</strong> so với tháng 4 cùng kỳ — đà tích cực</li>
+            <li>• Có <strong>{b1Stores.length} cửa hàng nhóm B1</strong> (Traffic ✓ CRV ✓ ATV ✓) — mô hình tốt để nhân rộng</li>
+            <li>• Traffic đạt <strong>{fmtPct(o.traffic_pct)}</strong> mục tiêu — sức hút thương hiệu mạnh</li>
+          </ul>
+        </div>
+
+        <div className="insight-card insight-warn fadeup" style={{animationDelay:'120ms'}}>
+          <div className="flex items-center gap-2 mb-2">
+            <IconAlert size={16} style={{color:'#8a6611'}}/>
+            <div className="font-semibold text-[13px]">Điểm cần lưu ý</div>
+          </div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 ml-1">
+            <li>• Vùng <strong>{worstRegion.name}</strong> chỉ đạt <strong>{fmtPct(worstRegion.pct)}</strong> — cần ưu tiên xử lý</li>
+            <li>• ATV trung bình <strong>{fmtCurrency(o.avg_atv)}</strong> và UPT <strong>{o.avg_upt.toFixed(2)}</strong> — còn dư địa upsell</li>
+            <li>• CRV trung bình <strong>{o.avg_crv.toFixed(1)}%</strong> — có khoảng cách so với mục tiêu thường 85%</li>
+            <li>• <strong>{data.stores.filter(s=>s.group==='B2' || s.group==='B5').length} CH</strong> ở nhóm B2/B5 — vận hành ổn nhưng cần đẩy traffic hoặc ATV</li>
+            <li>• Daily avg cần đạt: <strong>{fmtCurrency(f.daily_target_needed)}</strong>, cao hơn hiện tại {fmtPct((f.daily_target_needed/f.last_7_avg-1)*100,1)}</li>
+          </ul>
+        </div>
+
+        <div className="insight-card insight-danger fadeup" style={{animationDelay:'180ms'}}>
+          <div className="flex items-center gap-2 mb-2">
+            <IconAlert size={16} className="text-red-700"/>
+            <div className="font-semibold text-[13px]">Báo động — cần can thiệp ngay</div>
+          </div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 ml-1">
+            {bottom1.slice(0,4).map(s => (
+              <li key={s.name}>• <strong>{s.name.replace('GUMAC-','').replace('GUMAC ','').trim()}</strong> ({s.vung}): chỉ {fmtPct(s.pct)} — nhóm {s.group} ({s.group_label})</li>
+            ))}
+            {b8Stores.length > 0 && (
+              <li className="pt-1.5 border-t border-red-200"><strong>{b8Stores.length} CH nhóm B8</strong> — cả 3 trục Traffic/CRV/ATV đều yếu, cần kế hoạch đặc biệt</li>
+            )}
+          </ul>
+        </div>
+
+        <div className="insight-card insight-info fadeup" style={{animationDelay:'240ms'}}>
+          <div className="flex items-center gap-2 mb-2">
+            <IconCrystalBall size={16} style={{color:'var(--pastel-blue-deep)'}}/>
+            <div className="font-semibold text-[13px]">Dự báo cuối tháng</div>
+          </div>
+          <ul className="text-[12.5px] text-slate-700 space-y-1.5 ml-1">
+            <li>• Kịch bản <strong>cơ sở</strong>: {fmtCurrency(f.fc_base)} (<strong>{fmtPct(f.fc_base_pct)}</strong> MT)</li>
+            <li>• Kịch bản <strong>lạc quan</strong>: {fmtCurrency(f.fc_optimistic)} ({fmtPct(f.fc_optimistic_pct)} MT)</li>
+            <li>• Kịch bản <strong>thận trọng</strong>: {fmtCurrency(f.fc_conservative)} ({fmtPct(f.fc_conservative_pct)} MT)</li>
+            <li>• Khoảng cách đến MT (kịch bản cơ sở): <strong>{fmtCurrency(f.gap_to_target_base)}</strong></li>
+            <li>• Để chạm 100%, cần đẩy bình quân <strong>{fmtCurrency(f.daily_target_needed)}/ngày</strong> trong {m.remaining_days} ngày cuối</li>
+          </ul>
+        </div>
+      </div>
+
+      {/* Đề xuất hành động */}
+      <div className="surface-elevated p-6 mt-5 fadeup" style={{animationDelay:'300ms'}}>
+        <div className="flex items-center gap-3 mb-4">
+          <div style={{width:40,height:40,borderRadius:12,background:'linear-gradient(135deg,#5b8def,#b89cf0)',color:'white',display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <IconArrowRight size={20}/>
+          </div>
+          <div>
+            <div className="display-font font-bold text-[17px]">Đề xuất hành động trong {m.remaining_days} ngày cuối</div>
+            <div className="text-[12px] text-slate-500">Ưu tiên theo mức độ tác động lên doanh số tổng</div>
+          </div>
+        </div>
+
+        <div className="space-y-3 mt-4">
+          {[
+            {
+              icon:'🎯', color:'#5b8def', bg:'#eef4fe', title:'Ưu tiên 1 — Đẩy mạnh marketing cho vùng dẫn đầu',
+              desc:`Vùng ${bestRegion.name} đang chạy tốt (${fmtPct(bestRegion.pct)}). Tăng ngân sách ads 15-20% để gia cố doanh thu chắc chắn. Đặc biệt các CH nhóm B1 — chạy retargeting, push Zalo OA, livestream để khai thác tối đa traffic sẵn có.`
+            },
+            {
+              icon:'🚀', color:'#6dc88a', bg:'#e8f5ee', title:'Ưu tiên 2 — Tăng ATV cho nhóm B2 & B5',
+              desc:`${data.stores.filter(s=>s.group==='B2'||s.group==='B5').length} cửa hàng có vận hành tốt nhưng thiếu ATV hoặc Traffic. Triển khai combo "Mua kèm tiết kiệm", voucher cross-sell, đào tạo upsell tại quầy. Riêng B5: tăng ads geo-targeting bán kính 3-5km, hợp tác KOL/KOC địa phương.`
+            },
+            {
+              icon:'⚡', color:'#d4a849', bg:'#fdf6e3', title:`Ưu tiên 3 — Xử lý ${worstRegion.name} và các CH dưới 70%`,
+              desc:`Vùng ${worstRegion.name} chỉ đạt ${fmtPct(worstRegion.pct)} — cần audit cấp tốc. Với các CH nhóm B3/B4 (chốt đơn yếu): tập trung đào tạo kỹ năng tư vấn, kịch bản chốt đơn, flash sale giờ vàng. Triển khai retargeting khách đã ghé store nhưng chưa mua.`
+            },
+            {
+              icon:'🚨', color:'#e57878', bg:'#fdecec', title:'Ưu tiên 4 — Kế hoạch đặc biệt cho nhóm B8 (báo động)',
+              desc:b8Stores.length > 0
+                ? `${b8Stores.length} cửa hàng nhóm B8: ${b8Stores.slice(0,3).map(s=>s.name.replace('GUMAC-','').replace('GUMAC ','').trim()).join(', ')}${b8Stores.length>3?'...':''}. STOP ads thường, FIX vận hành (nhân sự, layout, sản phẩm) trước. Sau đó relaunch như cửa hàng mới với grand opening + boost ads 2 tuần đầu. Đánh giá lại sau 2 tháng.`
+                : 'Không có cửa hàng nào ở mức báo động — tiếp tục duy trì.'
+            },
+            {
+              icon:'📊', color:'#b89cf0', bg:'#f3edfb', title:'Ưu tiên 5 — Tận dụng cuối tuần & lễ',
+              desc:`Phân tích dữ liệu cho thấy doanh thu cuối tuần (T7-CN) thường cao 1.5-2x ngày thường. ${m.remaining_days} ngày cuối tháng còn 1-2 cuối tuần — chuẩn bị campaign "Tổng kết tháng — Giảm giá đặc biệt", đẩy livestream cuối tuần, voucher hạn dùng đến 31/5 để tạo urgency.`
+            },
+          ].map((item, i) => (
+            <div key={i} className="p-4 rounded-2xl flex gap-3" style={{background: item.bg, borderLeft:`4px solid ${item.color}`}}>
+              <div className="text-[22px]">{item.icon}</div>
+              <div className="flex-1">
+                <div className="font-semibold text-[14px] mb-1" style={{color: item.color}}>{item.title}</div>
+                <p className="text-[12.5px] text-slate-700 leading-relaxed">{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-5 p-4 rounded-2xl" style={{background:'linear-gradient(135deg, rgba(199,218,252,0.3), rgba(217,200,247,0.3))', border:'1px solid rgba(91,141,239,0.2)'}}>
+          <div className="flex items-start gap-3">
+            <span className="text-[20px]">💡</span>
+            <div>
+              <div className="font-semibold text-[13.5px] mb-1.5">Khuyến nghị cho Team Digital Marketing</div>
+              <p className="text-[12.5px] text-slate-700 leading-relaxed">
+                Với vai trò leader team Digital, anh có thể tập trung vào 3 đòn bẩy chính: <strong>(1) Geo-targeting tăng traffic</strong> cho các CH nhóm B5/B6 thiếu khách,
+                <strong> (2) Retargeting</strong> & <strong>remarketing</strong> cho các CH nhóm B3/B4 chốt đơn yếu (data Pixel + Zalo OA), và
+                <strong> (3) Content + KOC địa phương</strong> cho các CH cần phục hồi hình ảnh.
+                Phối hợp Trade Marketing để đồng bộ POSM, combo và Content team cho asset campaign cuối tháng.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+// =================
+// APP CHÍNH
+// =================
+const App = () => {
+  const [activeTab, setActiveTab] = useState('overview');
+  const data = window.DASHBOARD_DATA;
+  if (!data) return <div style={{padding:60, textAlign:'center'}}>Lỗi tải dữ liệu</div>;
+
+  const tabs = [
+    {id:'overview', label:'Tổng quan', icon:<IconChart size={14}/>},
+    {id:'forecast', label:'Dự báo', icon:<IconCrystalBall size={14}/>},
+    {id:'detail', label:'Khu vực & Cửa hàng', icon:<IconMap size={14}/>},
+    {id:'ranking', label:'Xếp hạng', icon:<IconTrophy size={14}/>},
+    {id:'insight', label:'Nhận định & Đề xuất', icon:<IconLightbulb size={14}/>},
+  ];
+
+  return (
+    <div style={{maxWidth:1440, margin:'0 auto', padding:'24px 28px 60px 28px'}}>
+      {/* Header */}
+      <div className="surface-elevated p-5 mb-5 fadeup">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <div className="flex items-center gap-3">
+              <div style={{width:46, height:46, borderRadius:14,
+                  background:'linear-gradient(135deg, #5b8def 0%, #b89cf0 60%, #ed9ebe 100%)',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  color:'white', fontWeight:800, fontFamily:'Plus Jakarta Sans', fontSize:18,
+                  boxShadow:'0 6px 20px rgba(91,141,239,0.3)'}}>G</div>
+              <div>
+                <h1 className="display-font shimmer-text" style={{fontSize:24, fontWeight:800, margin:0}}>GUMAC CRM Dashboard</h1>
+                <div className="text-[12.5px] text-slate-500 mt-0.5">Tổng quan kinh doanh tháng {data.meta.month}/{data.meta.year} • Cập nhật đến {data.meta.data_through}</div>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <div className="text-[11px] text-slate-500 uppercase font-semibold tracking-wider">Doanh thu lũy kế</div>
+              <div className="ticker display-font font-bold text-[20px]" style={{color:'var(--pastel-blue-deep)'}}>{fmtCurrency(data.overview.total_dt_dat)}</div>
+            </div>
+            <div className="h-10 w-px bg-slate-200"></div>
+            <div className="text-right">
+              <div className="text-[11px] text-slate-500 uppercase font-semibold tracking-wider">% Mục tiêu</div>
+              <div className="ticker display-font font-bold text-[20px]" style={{color: colorByPct(data.overview.pct_full)}}>{fmtPct(data.overview.pct_full)}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="glass" style={{padding:6, borderRadius:18, marginBottom:18, display:'inline-flex', flexWrap:'wrap', gap:4}}>
+        {tabs.map(t => (
+          <button key={t.id} className={`nav-pill ${activeTab===t.id?'active':''}`} onClick={()=>setActiveTab(t.id)}>
+            <span style={{display:'inline-flex',alignItems:'center',gap:6}}>{t.icon} {t.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Content */}
+      <div>
+        {activeTab === 'overview' && <Section1 data={data}/>}
+        {activeTab === 'forecast' && <Section2 data={data}/>}
+        {activeTab === 'detail' && <Section3 data={data}/>}
+        {activeTab === 'ranking' && <Section4 data={data}/>}
+        {activeTab === 'insight' && <Section5 data={data}/>}
+      </div>
+
+      {/* Footer */}
+      <div className="mt-10 text-center">
+        <div className="text-[11px] text-slate-400">
+          GUMAC Digital Team • Dashboard CRM • Dữ liệu Offline {data.meta.month}/{data.meta.year}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+
+</script>
+</body>
+</html>
